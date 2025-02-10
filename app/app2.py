@@ -9,12 +9,21 @@ import streamlit as st
 import pyaudio
 import cv2
 
-# 🔍 Define Model Path for Windows (Use Raw String or Double Backslashes)
-MODEL_PATH = r"I:\My Drive\SpeechEmotionDetection\models\Speech_emotion_vgg16_model.h5"
+# 🔍 Define Model Path (Cross-Platform)
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "../models/Speech_emotion_vgg16_model.h5")
 
-# 🔍 Check If Model Exists
+# 🔍 Debug: Check if the model file exists
 if not os.path.exists(MODEL_PATH):
-    st.error(f"❌ Model file not found at `{MODEL_PATH}`. Please check if the file exists and is accessible.")
+    st.error(f"❌ Model file not found at `{MODEL_PATH}`.")
+    st.write("📂 **Checking models directory contents:**")
+    
+    MODEL_DIR = os.path.dirname(MODEL_PATH)
+    if os.path.exists(MODEL_DIR):
+        st.write(f"Files in `{MODEL_DIR}`:", os.listdir(MODEL_DIR))
+    else:
+        st.write(f"❌ Directory `{MODEL_DIR}` not found!")
+
+    st.write("📌 **Manually upload the model to the `models/` folder.**")
     st.stop()
 
 # 🔥 Load the Model
