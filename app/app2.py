@@ -11,7 +11,7 @@ import cv2
 
 # 🔍 Define the models directory and model path (Cross-Platform)
 MODEL_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../models"))
-MODEL_PATH = os.path.join(MODEL_DIR, "Speech_emotion_vgg16_model.h5")
+MODEL_PATH = os.path.join(MODEL_DIR, "speech_emotion_vgg16_model.h5")
 
 # 🔍 Ensure the models directory exists
 if not os.path.exists(MODEL_DIR):
