@@ -10,7 +10,7 @@ import pyaudio
 import cv2
 
 # Load the trained VGG16-based emotion detection model
-model = tf.keras.models.load_model("models\speech_emotion_model_vgg16.h5", compile=False)
+model = tf.keras.models.load_model(r"models\speech_emotion_model_vgg16.h5", compile=False)
 model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
 # Audio recording parameters
@@ -135,4 +135,5 @@ if uploaded_file:
 st.write("\n" * 10)
 st.write("---")
 st.write("**Project by**")
-st.write("[🔗]()")
+st.write("[🔗](https://www.linkedin.com/in/pranavharke) Pranav Harke")
+st.write("[🔗](https://www.linkedin.com/in/parvejkhan-pathan-891527337/) Parvej Pathan")

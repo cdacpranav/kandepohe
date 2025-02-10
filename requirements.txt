@@ -12,3 +12,4 @@ matplotlib
 soundfile
 scipy
 opencv-python
+h5py
