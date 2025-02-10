@@ -8,21 +8,10 @@ import tensorflow as tf
 import streamlit as st
 import pyaudio
 import cv2
-import gdown
 
-# Define model path and ensure it exists
-MODEL_PATH = os.path.join(os.getcwd(), "models", "Speech_emotion_vgg16_model.h5")
-
-if not os.path.exists(MODEL_PATH):
-    st.warning("🔽 Model not found! Downloading from Google Drive...")
-    gdown.download("YOUR_GOOGLE_DRIVE_MODEL_LINK", MODEL_PATH, quiet=False)
-
-if not os.path.exists(MODEL_PATH):
-    st.error(f"❌ Model file not found at `{MODEL_PATH}`. Please upload the model file manually.")
-    st.stop()
 
 # Load the trained VGG16-based emotion detection model
-model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+model = tf.keras.models.load_model("I:\My Drive\SpeechEmotionDetection\models\Speech_emotion_vgg16_model.h5", compile=False)
 model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
 # Audio recording parameters
