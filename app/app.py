@@ -133,5 +133,6 @@ if uploaded_file:
     st.write(f"Predicted Emotion: **{emotion_map.get(emotion_label, 'Unknown')}**")
 
 st.write("\n" * 10)
+st.write("---")
 st.write("**Project by**")
 st.write("[🔗]()")
