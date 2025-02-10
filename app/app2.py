@@ -9,21 +9,24 @@ import streamlit as st
 import pyaudio
 import cv2
 
-# 🔍 Define Model Path (Cross-Platform)
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "../models/Speech_emotion_vgg16_model.h5")
+# 🔍 Define the models directory and model path (Cross-Platform)
+MODEL_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../models"))
+MODEL_PATH = os.path.join(MODEL_DIR, "Speech_emotion_vgg16_model.h5")
 
-# 🔍 Debug: Check if the model file exists
+# 🔍 Ensure the models directory exists
+if not os.path.exists(MODEL_DIR):
+    os.makedirs(MODEL_DIR)  # Create the directory if missing
+    st.warning(f"📂 `models/` directory was missing. It has been created. Please upload `Speech_emotion_vgg16_model.h5`.")
+
+# 🔍 Check if the model file exists before loading
 if not os.path.exists(MODEL_PATH):
     st.error(f"❌ Model file not found at `{MODEL_PATH}`.")
     st.write("📂 **Checking models directory contents:**")
-    
-    MODEL_DIR = os.path.dirname(MODEL_PATH)
     if os.path.exists(MODEL_DIR):
-        st.write(f"Files in `{MODEL_DIR}`:", os.listdir(MODEL_DIR))
+        st.write(os.listdir(MODEL_DIR) if os.listdir(MODEL_DIR) else "❌ `models/` folder is empty!")
     else:
-        st.write(f"❌ Directory `{MODEL_DIR}` not found!")
-
-    st.write("📌 **Manually upload the model to the `models/` folder.**")
+        st.write("❌ `models/` directory not found!")
+    st.write("📌 **Manually upload the model to the `models/` folder and restart the app.**")
     st.stop()
 
 # 🔥 Load the Model
