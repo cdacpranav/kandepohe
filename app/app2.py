@@ -9,12 +9,19 @@ import streamlit as st
 import pyaudio
 import cv2
 
+# 🔍 Define Model Path for Windows (Use Raw String or Double Backslashes)
+MODEL_PATH = r"I:\My Drive\SpeechEmotionDetection\models\Speech_emotion_vgg16_model.h5"
 
-# Load the trained VGG16-based emotion detection model
-model = tf.keras.models.load_model(r"I:\My Drive\SpeechEmotionDetection\models\Speech_emotion_vgg16_model.h5", compile=False)
+# 🔍 Check If Model Exists
+if not os.path.exists(MODEL_PATH):
+    st.error(f"❌ Model file not found at `{MODEL_PATH}`. Please check if the file exists and is accessible.")
+    st.stop()
+
+# 🔥 Load the Model
+model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
-# Audio recording parameters
+# 🎤 Audio Recording Parameters
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
@@ -24,7 +31,7 @@ audio = pyaudio.PyAudio()
 recording = False
 frames = []
 
-# Function to extract Mel Spectrogram as a 2D image for VGG16
+# 🔍 Extract Mel Spectrogram for VGG16 Model
 def extract_mel_spectrogram(audio_bytes, img_size=(224, 224)):
     try:
         audio_stream = io.BytesIO(audio_bytes)
@@ -47,11 +54,11 @@ def extract_mel_spectrogram(audio_bytes, img_size=(224, 224)):
 
         return np.expand_dims(mel_spec_rgb, axis=0)  # Add batch dimension
     except Exception as e:
-        st.error(f"Error in feature extraction: {e}")
+        st.error(f"❌ Error in feature extraction: {e}")
         return None
 
 
-# Function to start recording
+# 🎤 Start Audio Recording
 def start_recording():
     global recording, frames
     recording = True
@@ -69,7 +76,7 @@ def start_recording():
     thread.start()
 
 
-# Function to stop recording and process audio
+# ⏹ Stop Audio Recording & Process Audio
 def stop_recording():
     global recording
     recording = False
@@ -88,20 +95,21 @@ def stop_recording():
     return audio_stream.getvalue()  # Return audio bytes
 
 
-# Streamlit UI
+# 📌 Streamlit UI
 st.title("🎙️ Speech Emotion Detection")
 
 st.write("🎤 Click **Start Recording** to begin speaking, and **Stop Recording** to analyze.")
 
-# Create Streamlit buttons
+# 🟢 Start Recording Button
 if st.button("Start Recording 🎙️"):
     start_recording()
-    st.write("Recording... Speak now!")
+    st.write("🎤 Recording... Speak now!")
 
+# ⏹ Stop Recording Button & Process Audio
 if st.button("Stop Recording ⏹️"):
     audio_bytes = stop_recording()
 
-    # Extract features and make prediction
+    # Extract Features & Make Prediction
     features = extract_mel_spectrogram(audio_bytes)
 
     if features is not None:
@@ -109,16 +117,16 @@ if st.button("Stop Recording ⏹️"):
             prediction = model.predict(features)
             emotion_label = np.argmax(prediction)
 
-            # Emotion mapping
+            # 🎭 Emotion Mapping
             emotion_map = {
                 0: "neutral", 1: "calm", 2: "happy", 3: "sad",
                 4: "angry", 5: "fearful", 6: "disgust", 7: "surprised"
             }
             st.success(f"🎭 **Predicted Emotion:** {emotion_map.get(emotion_label, 'Unknown')}")
         except Exception as e:
-            st.error(f"Error during prediction: {e}")
+            st.error(f"❌ Error during prediction: {e}")
 
-# File Upload Option
+# 📂 File Upload Option
 st.write("---")
 st.write("📂 **Upload an audio file** for emotion detection.")
 
@@ -140,7 +148,7 @@ if uploaded_file:
             }
             st.success(f"🎭 **Predicted Emotion:** {emotion_map.get(emotion_label, 'Unknown')}")
         except Exception as e:
-            st.error(f"Error during prediction: {e}")
+            st.error(f"❌ Error during prediction: {e}")
 
 st.write("\n" * 10)
 st.write("---")
