@@ -13,3 +13,4 @@ soundfile
 scipy
 opencv-python
 h5py
+gdown
