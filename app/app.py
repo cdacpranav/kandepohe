@@ -131,3 +131,7 @@ if uploaded_file:
     emotion_map = {0: "neutral", 1: "calm", 2: "happy", 3: "sad", 4: "angry", 5: "fearful", 6: "disgust",
                    7: "surprised"}
     st.write(f"Predicted Emotion: **{emotion_map.get(emotion_label, 'Unknown')}**")
+
+st.write("\n" * 10)
+st.write("**Project by**")
+st.write("[🔗]()")
