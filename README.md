@@ -1,5 +1,6 @@
 
-# Speech Emotion Detection using REVDESS
+# Speech Emotion Detection using REVDESS [🔗](https://speechemotiondetection-pranavharke.streamlit.app/)
+
 
 ## Overview
 This project implements a Speech Emotion Detection system using deep learning and CNNs. The system is trained on the RAVDESS dataset and can predict emotions from speech audio files. It includes model training, evaluation, and a web-based deployment using Streamlit.
