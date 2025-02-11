@@ -146,19 +146,20 @@ if uploaded_file:
         st.write(f"Predicted Emotion: **{emotion_map.get(emotion_label, 'Unknown')}**")
 
 # Upload model option if missing
-# st.write("---")
-# st.write("📤 **If your model file is missing, upload it here.**")
+st.write("---")
+st.write("📤 **If your model file is missing, upload it here.**")
 
-# uploaded_model = st.file_uploader("Upload your trained model (.h5)", type=["h5"])
-# if uploaded_model:
-#     model_path = os.path.join(MODEL_DIR, uploaded_model.name)
-#     with open(model_path, "wb") as f:
-#         f.write(uploaded_model.getbuffer())
-#     st.success(f"Model uploaded successfully: {uploaded_model.name}")
-#     st.write("🔄 **Restart the app to load the new model.**")
+uploaded_model = st.file_uploader("Upload your trained model (.h5)", type=["h5"])
+if uploaded_model:
+    model_path = os.path.join(MODEL_DIR, uploaded_model.name)
+    with open(model_path, "wb") as f:
+        f.write(uploaded_model.getbuffer())
+    st.success(f"Model uploaded successfully: {uploaded_model.name}")
+    st.write("🔄 **Restart the app to load the new model.**")
 
 st.write("\n" * 10)
 st.write("---")
 st.write("**Project by**")
-st.write("[🔗 Pranav Harke](https://www.linkedin.com/in/pranavharke)")
-st.write("[🔗 Parvej Pathan](https://www.linkedin.com/in/parvejkhan-pathan-891527337/)")
+st.write("[🔗](https://www.linkedin.com/in/pranavharke) [Pranav Harke](https://github.com/pranavharke)")
+st.write("[🔗](https://www.linkedin.com/in/parvejkhan-pathan-891527337/)  Parvej Pathan")
+st
