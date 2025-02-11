@@ -9,12 +9,18 @@ import streamlit as st
 import pyaudio
 import cv2
 
-# Ensure model path exists and use absolute path
-MODEL_PATH = os.path.abspath("models/speech_emotion_vgg16_model.h5")
+# Define model directory and file path
+MODEL_DIR = "models"
+MODEL_FILE = "speech_emotion_vgg16_model.h5"  # Ensure this matches the filename in your folder
+MODEL_PATH = os.path.join(MODEL_DIR, MODEL_FILE)
+
+# Ensure model directory exists
+if not os.path.exists(MODEL_DIR):
+    os.makedirs(MODEL_DIR)
 
 # Check if model file exists
 if not os.path.exists(MODEL_PATH):
-    st.error(f"Model file not found at {MODEL_PATH}. Please upload the correct model.")
+    st.error(f"Model file not found at {MODEL_PATH}. Please upload the correct model below.")
     st.stop()  # Stop execution if model is missing
 
 # Load the trained VGG16-based emotion detection model
@@ -139,13 +145,13 @@ if uploaded_file:
         }
         st.write(f"Predicted Emotion: **{emotion_map.get(emotion_label, 'Unknown')}**")
 
-# Upload model option
+# Upload model option if missing
 st.write("---")
 st.write("📤 **If your model file is missing, upload it here.**")
 
 uploaded_model = st.file_uploader("Upload your trained model (.h5)", type=["h5"])
 if uploaded_model:
-    model_path = os.path.join("models", uploaded_model.name)
+    model_path = os.path.join(MODEL_DIR, uploaded_model.name)
     with open(model_path, "wb") as f:
         f.write(uploaded_model.getbuffer())
     st.success(f"Model uploaded successfully: {uploaded_model.name}")
