@@ -9,31 +9,11 @@ import streamlit as st
 import pyaudio
 import cv2
 
-# 🔍 Define the models directory and model path (Cross-Platform)
-MODEL_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../models"))
-MODEL_PATH = os.path.join(MODEL_DIR, "speech_emotion_vgg16_model.h5")
-
-# 🔍 Ensure the models directory exists
-if not os.path.exists(MODEL_DIR):
-    os.makedirs(MODEL_DIR)  # Create the directory if missing
-    st.warning(f"📂 `models/` directory was missing. It has been created. Please upload `Speech_emotion_vgg16_model.h5`.")
-
-# 🔍 Check if the model file exists before loading
-if not os.path.exists(MODEL_PATH):
-    st.error(f"❌ Model file not found at `{MODEL_PATH}`.")
-    st.write("📂 **Checking models directory contents:**")
-    if os.path.exists(MODEL_DIR):
-        st.write(os.listdir(MODEL_DIR) if os.listdir(MODEL_DIR) else "❌ `models/` folder is empty!")
-    else:
-        st.write("❌ `models/` directory not found!")
-    st.write("📌 **Manually upload the model to the `models/` folder and restart the app.**")
-    st.stop()
-
-# 🔥 Load the Model
-model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+# Load the trained VGG16-based emotion detection model
+model = tf.keras.models.load_model("models\speech_emotion_vgg16model.h5", compile=False)
 model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
-# 🎤 Audio Recording Parameters
+# Audio recording parameters
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
@@ -43,41 +23,38 @@ audio = pyaudio.PyAudio()
 recording = False
 frames = []
 
-# 🔍 Extract Mel Spectrogram for VGG16 Model
+# Function to extract Mel Spectrogram as a 2D image for VGG16
 def extract_mel_spectrogram(audio_bytes, img_size=(224, 224)):
-    try:
-        audio_stream = io.BytesIO(audio_bytes)
-        with wave.open(audio_stream, 'rb') as wf:
-            sr = wf.getframerate()
-            frames = wf.readframes(wf.getnframes())
+    audio_stream = io.BytesIO(audio_bytes)
+    with wave.open(audio_stream, 'rb') as wf:
+        sr = wf.getframerate()
+        frames = wf.readframes(wf.getnframes())
 
-        y = np.frombuffer(frames, dtype=np.int16).astype(np.float32) / 32768.0
-        mel_spec = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128)
-        mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
+    y = np.frombuffer(frames, dtype=np.int16).astype(np.float32) / 32768.0
+    mel_spec = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128)
+    mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
 
-        # Resize to VGG16 input size (224x224)
-        mel_spec_resized = cv2.resize(mel_spec_db, img_size, interpolation=cv2.INTER_LINEAR)
+    # Resize to VGG16 input size (224x224)
+    mel_spec_resized = cv2.resize(mel_spec_db, img_size, interpolation=cv2.INTER_LINEAR)
 
-        # Normalize to range [0,1]
-        mel_spec_resized = (mel_spec_resized - mel_spec_resized.min()) / (mel_spec_resized.max() - mel_spec_resized.min())
+    # Normalize to range [0,1]
+    mel_spec_resized = (mel_spec_resized - mel_spec_resized.min()) / (mel_spec_resized.max() - mel_spec_resized.min())
 
-        # Convert to 3-channel image for VGG16 (RGB-like format)
-        mel_spec_rgb = np.stack([mel_spec_resized] * 3, axis=-1)
+    # Convert to 3-channel image for VGG16 (RGB-like format)
+    mel_spec_rgb = np.stack([mel_spec_resized] * 3, axis=-1)
 
-        return np.expand_dims(mel_spec_rgb, axis=0)  # Add batch dimension
-    except Exception as e:
-        st.error(f"❌ Error in feature extraction: {e}")
-        return None
+    return np.expand_dims(mel_spec_rgb, axis=0)  # Add batch dimension
 
 
-# 🎤 Start Audio Recording
+# Function to start recording
 def start_recording():
     global recording, frames
     recording = True
     frames = []
 
     def record():
-        stream = audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
+        stream = audio.open(format=FORMAT, channels=CHANNELS, rate=RATE,
+                            input=True, frames_per_buffer=CHUNK)
         while recording:
             data = stream.read(CHUNK)
             frames.append(data)
@@ -88,7 +65,7 @@ def start_recording():
     thread.start()
 
 
-# ⏹ Stop Audio Recording & Process Audio
+# Function to stop recording and process audio
 def stop_recording():
     global recording
     recording = False
@@ -107,38 +84,34 @@ def stop_recording():
     return audio_stream.getvalue()  # Return audio bytes
 
 
-# 📌 Streamlit UI
+# Streamlit UI
 st.title("🎙️ Speech Emotion Detection")
 
 st.write("🎤 Click **Start Recording** to begin speaking, and **Stop Recording** to analyze.")
 
-# 🟢 Start Recording Button
+# Create Streamlit buttons
 if st.button("Start Recording 🎙️"):
     start_recording()
-    st.write("🎤 Recording... Speak now!")
+    st.write("Recording... Speak now!")
 
-# ⏹ Stop Recording Button & Process Audio
 if st.button("Stop Recording ⏹️"):
     audio_bytes = stop_recording()
 
-    # Extract Features & Make Prediction
+    # Extract features and make prediction
     features = extract_mel_spectrogram(audio_bytes)
 
-    if features is not None:
-        try:
-            prediction = model.predict(features)
-            emotion_label = np.argmax(prediction)
+    features = np.squeeze(features)  # Remove extra batch dim if exists
+    features = np.expand_dims(features, axis=0)  # Ensure correct batch format
 
-            # 🎭 Emotion Mapping
-            emotion_map = {
-                0: "neutral", 1: "calm", 2: "happy", 3: "sad",
-                4: "angry", 5: "fearful", 6: "disgust", 7: "surprised"
-            }
-            st.success(f"🎭 **Predicted Emotion:** {emotion_map.get(emotion_label, 'Unknown')}")
-        except Exception as e:
-            st.error(f"❌ Error during prediction: {e}")
+    prediction = model.predict(features)
+    emotion_label = np.argmax(prediction)
 
-# 📂 File Upload Option
+    # Emotion mapping
+    emotion_map = {0: "neutral", 1: "calm", 2: "happy", 3: "sad", 4: "angry", 5: "fearful", 6: "disgust",
+                   7: "surprised"}
+    st.write(f"Predicted Emotion: **{emotion_map.get(emotion_label, 'Unknown')}**")
+
+# File Upload Option
 st.write("---")
 st.write("📂 **Upload an audio file** for emotion detection.")
 
@@ -149,18 +122,15 @@ if uploaded_file:
 
     features = extract_mel_spectrogram(audio_bytes)
 
-    if features is not None:
-        try:
-            prediction = model.predict(features)
-            emotion_label = np.argmax(prediction)
+    features = np.squeeze(features)  # Remove extra batch dim if exists
+    features = np.expand_dims(features, axis=0)  # Ensure correct batch format
 
-            emotion_map = {
-                0: "neutral", 1: "calm", 2: "happy", 3: "sad",
-                4: "angry", 5: "fearful", 6: "disgust", 7: "surprised"
-            }
-            st.success(f"🎭 **Predicted Emotion:** {emotion_map.get(emotion_label, 'Unknown')}")
-        except Exception as e:
-            st.error(f"❌ Error during prediction: {e}")
+    prediction = model.predict(features)
+    emotion_label = np.argmax(prediction)
+
+    emotion_map = {0: "neutral", 1: "calm", 2: "happy", 3: "sad", 4: "angry", 5: "fearful", 6: "disgust",
+                   7: "surprised"}
+    st.write(f"Predicted Emotion: **{emotion_map.get(emotion_label, 'Unknown')}**")
 
 st.write("\n" * 10)
 st.write("---")
